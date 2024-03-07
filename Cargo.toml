@@ -1,0 +1,29 @@
+[package]
+name = "connect-any-server"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+axum = { version = "0.7.4", features = ["macros", "ws"]}
+base64 = "0.21.7"
+reqwest = { version = "0.11", features = ["json"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0.113"
+rusqlite = { version = "0.29.0", features = ["bundled"] }
+rustsqlite_derive = { path = "./rustsqlite_derive"}
+serde_rusqlite = "0.33.1"
+tokio = { version = "1.36.0", features = ["full"] }
+toml = "0.8.10"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+uuid = {version = "1.7.0", features = [ "v7", "fast-rng", "macro-diagnostics"]}
+strum = "0.24"
+strum_macros = "0.24"
+num_enum = "0.5.1"
+
+[dev-dependencies]
+tokio-test = "*"
+
+[[bin]]
+  name = "connect-any-server"
+  path = "./src/main.rs"
