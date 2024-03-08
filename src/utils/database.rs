@@ -13,7 +13,13 @@ pub fn get_database_connection() -> BDEResult<Connection> {
 }
 
 fn init_database() -> BDEResult<PathBuf> {
-    let database_path = PathBuf::from("./data/data.db");
+    let data_path = PathBuf::from("./data");
+
+    if !data_path.exists() {
+        fs::create_dir(data_path.clone());
+    }
+
+    let database_path = data_path.join("data.db");
 
     if !database_path.exists() {
         let conn = Connection::open(&database_path)?;

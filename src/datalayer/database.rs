@@ -113,7 +113,7 @@ impl DatabaseUserDevice {
         let mut all_data: Vec<DatabaseDevice> = Vec::new();
         let conn = get_database_connection()?;
 
-        let sql_command = format!("SELECT * FROM devices JOIN user_device ON devices.id = user_device.device_id where user_device.user_id = {}", user_id);
+        let sql_command = format!("SELECT devices.* FROM devices JOIN user_device ON devices.id = user_device.device_id where user_device.user_id = {}", user_id);
 
         let mut stmt = conn.prepare(sql_command.as_str())?;
 

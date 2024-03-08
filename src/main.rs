@@ -20,6 +20,7 @@ async fn main() {
         // `GET /` goes to `root`
         .route("/", get(root))
         .route("/user/adduser", post(user::add_user))
+        .route("/user/devices", get(user::get_user_device))
         .with_state(state);
 
     // .route("/ws", get(ws_handler))

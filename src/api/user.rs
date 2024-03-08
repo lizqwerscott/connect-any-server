@@ -1,6 +1,4 @@
-use std::str::FromStr;
-
-use axum::{debug_handler, extract::State, response::IntoResponse, Json};
+use axum::{debug_handler, extract::Query, extract::State, response::IntoResponse, Json};
 use serde::Deserialize;
 
 use super::{return_base_res, return_bool_res};
@@ -8,6 +6,7 @@ use crate::datalayer::Device;
 use crate::datalayer::DeviceType;
 use crate::datalayer::User;
 use crate::state::AppState;
+use crate::utils::ba_error;
 
 #[derive(Deserialize)]
 pub struct InputAddDevice {
@@ -28,7 +27,7 @@ pub async fn add_user(
     State(state): State<AppState>,
     Json(payload): Json<InputAddUser>,
 ) -> impl IntoResponse {
-    let handleer = || async {
+    let handler = || {
         let mut user = User::build(payload.name)?;
 
         let device_type: DeviceType = payload.device.device_type.parse()?;
@@ -42,5 +41,27 @@ pub async fn add_user(
         Ok(())
     };
 
-    Json(return_bool_res(handleer().await))
+    Json(return_bool_res(handler()))
+}
+
+#[derive(Deserialize)]
+pub struct InputGetUser {
+    name: String,
+}
+
+#[debug_handler]
+pub async fn get_user_device(username: Query<InputGetUser>) -> impl IntoResponse {
+    if let Query(username) = username {
+        let handler = || {
+            if let Some(user) = User::find_user(username.name)? {
+                Ok(user)
+            } else {
+                Err(ba_error("not find user"))
+            }
+        };
+
+        Json(return_base_res(handler()))
+    } else {
+        Json(return_base_res(Err("Invalid username".into())))
+    }
 }

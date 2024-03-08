@@ -26,7 +26,7 @@ pub type Device = database::DatabaseDevice;
 pub struct User {
     id: u64,
     name: String,
-    devices: Vec<Device>,
+    pub devices: Vec<Device>,
 }
 
 impl User {
@@ -52,6 +52,22 @@ impl User {
             name,
             devices: vec![],
         })
+    }
+
+    pub fn find_user(name: String) -> BDEResult<Option<Self>> {
+        if let Some(user) = database::DatabaseUser::find_user(name.clone())? {
+            // 如果找到用户，则获取其设备信息
+            let devices = database::DatabaseUserDevice::get_user_devices(user.id)?;
+
+            // 返回用户及其设备信息
+            Ok(Some(Self {
+                id: user.id,
+                name: user.name,
+                devices,
+            }))
+        } else {
+            Ok(None)
+        }
     }
 
     pub fn add_device(
