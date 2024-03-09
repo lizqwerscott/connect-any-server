@@ -1,4 +1,5 @@
 pub mod api;
+mod bark;
 mod datalayer;
 mod state;
 mod utils;

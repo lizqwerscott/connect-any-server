@@ -45,7 +45,7 @@ pub struct DatabaseDevice {
     pub name: String,
     pub notification: String,
     #[serde(rename = "type")]
-    device_type: DeviceType,
+    pub device_type: DeviceType,
 }
 
 impl DatabaseDevice {

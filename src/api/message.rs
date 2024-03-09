@@ -1,13 +1,14 @@
 use axum::{debug_handler, extract::State, response::IntoResponse, Json};
 use serde::Deserialize;
 
+use crate::bark::send_bark;
 use crate::state::AppState;
 use crate::{
     datalayer::{clipboard::Clipboard, Device, InputDevice},
     state::ClipboardData,
 };
 
-use crate::datalayer::User;
+use crate::datalayer::{DeviceType, User};
 
 use super::{return_base_res, return_bool_res};
 
@@ -52,7 +53,14 @@ pub async fn add_message(
 
         for device in user.devices.into_iter() {
             if device != now_device {
-                need_update_devices.push(device);
+                //iPhone use bark to send message
+                if device.device_type == DeviceType::Ios {
+                    if let Err(err) = send_bark(device.notification, now_device.name.clone(), now_device.device_type, payload.message.data.clone()).await {
+                        tracing::error!("send bark error: {}", err);
+                    }
+                } else {
+                    need_update_devices.push(device);
+                }
             }
         }
 
