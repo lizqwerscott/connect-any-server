@@ -5,6 +5,7 @@ use axum::{
     Router,
 };
 
+use connect_any_server::api::message;
 use connect_any_server::api::user;
 use connect_any_server::init;
 
@@ -21,6 +22,8 @@ async fn main() {
         .route("/", get(root))
         .route("/user/adduser", post(user::add_user))
         .route("/user/devices", get(user::get_user_device))
+        .route("/message/addmessage", post(message::add_message))
+        .route("/message/updatebase", post(message::message_update_base))
         .with_state(state);
 
     // .route("/ws", get(ws_handler))

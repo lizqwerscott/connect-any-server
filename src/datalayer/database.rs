@@ -39,11 +39,11 @@ impl DatabaseUser {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct DatabaseDevice {
     pub id: u64,
-    name: String,
-    notification: String,
+    pub name: String,
+    pub notification: String,
     #[serde(rename = "type")]
     device_type: DeviceType,
 }
@@ -74,14 +74,24 @@ impl DatabaseDevice {
         database_delete("devices", format!("id == {}", self.id))
     }
 
+    pub fn get_device(name: String, device_type: DeviceType) -> BDEResult<Self> {
+        if let Some(device) = DatabaseDevice::find_device(name.clone(), device_type)? {
+            Ok(device)
+        } else {
+            Err(ba_error(
+                format!("no ({}, {}) device found", name, device_type).as_str(),
+            ))
+        }
+    }
+
     pub fn find_device(name: String, device_type: DeviceType) -> BDEResult<Option<Self>> {
         // Find device in database
-        let device = database_select::<Self>(
+        let devices = database_select::<Self>(
             "devices",
             Some(format!("name == '{}' and type == '{}'", name, device_type)),
         )?;
 
-        Ok(device.into_iter().next())
+        Ok(devices.into_iter().next())
     }
 }
 
@@ -126,11 +136,11 @@ impl DatabaseUserDevice {
         Ok(all_data)
     }
 
-    pub fn get_device_users(device_id: u64) -> BDEResult<Vec<DatabaseUser>> {
+    pub fn get_device_users(device_id: u64) -> BDEResult<Option<DatabaseUser>> {
         let mut all_data: Vec<DatabaseUser> = Vec::new();
         let conn = get_database_connection()?;
 
-        let sql_command = format!("SELECT * FROM users JOIN user_device ON users.id = user_device.user_id where user_device.device_id = {}", device_id);
+        let sql_command = format!("SELECT users.* FROM users JOIN user_device ON users.id = user_device.user_id where user_device.device_id = {}", device_id);
 
         let mut stmt = conn.prepare(sql_command.as_str())?;
 
@@ -140,6 +150,6 @@ impl DatabaseUserDevice {
             all_data.push(data?);
         }
 
-        Ok(all_data)
+        Ok(all_data.into_iter().next())
     }
 }

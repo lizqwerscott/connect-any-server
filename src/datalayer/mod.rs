@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use strum_macros::Display;
 use strum_macros::EnumString;
 
+use crate::utils::ba_error;
 use crate::utils::BDEResult;
 
 pub mod clipboard;
@@ -24,8 +25,8 @@ pub type Device = database::DatabaseDevice;
 
 #[derive(Deserialize, Serialize)]
 pub struct User {
-    id: u64,
-    name: String,
+    pub id: u64,
+    pub name: String,
     pub devices: Vec<Device>,
 }
 
@@ -67,6 +68,22 @@ impl User {
             }))
         } else {
             Ok(None)
+        }
+    }
+
+    pub fn find_user_from_device(device: &Device) -> BDEResult<Self> {
+        if let Some(user) = database::DatabaseUserDevice::get_device_users(device.id)? {
+            // 如果找到用户，则获取其设备信息
+            let devices = database::DatabaseUserDevice::get_user_devices(user.id)?;
+
+            // 返回用户及其设备信息
+            Ok(Self {
+                id: user.id,
+                name: user.name,
+                devices,
+            })
+        } else {
+            Err(ba_error("device user not found"))
         }
     }
 
