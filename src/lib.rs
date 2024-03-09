@@ -2,7 +2,7 @@ pub mod api;
 mod datalayer;
 mod state;
 mod utils;
-mod websocket;
+pub mod websocket;
 
 use state::AppState;
 

@@ -1,36 +1,15 @@
-use axum::{
-    debug_handler,
-    extract::{Query, State},
-    response::IntoResponse,
-    Json,
-};
+use axum::{debug_handler, extract::State, response::IntoResponse, Json};
 use serde::Deserialize;
 
 use crate::state::AppState;
 use crate::{
-    datalayer::{clipboard::Clipboard, Device},
+    datalayer::{clipboard::Clipboard, Device, InputDevice},
     state::ClipboardData,
 };
 
 use crate::datalayer::User;
-use crate::utils::BDEResult;
 
-use super::{return_base_res, return_bool_res, user};
-
-#[derive(Deserialize)]
-pub struct InputDevice {
-    name: String,
-    #[serde(rename = "type")]
-    device_type: String,
-}
-
-impl InputDevice {
-    fn parse(self) -> BDEResult<Device> {
-        let device_type = self.device_type.parse()?;
-
-        Ok(Device::get_device(self.name, device_type)?)
-    }
-}
+use super::{return_base_res, return_bool_res};
 
 #[derive(Deserialize)]
 pub struct InputAddMessage {
@@ -50,7 +29,7 @@ pub async fn add_message(
 
         let mut clipboard_datas = state.clipboard_datas.lock().await;
 
-        let mut clipboard_data = clipboard_datas
+        let clipboard_data = clipboard_datas
             .entry(user.id)
             .or_insert(ClipboardData::new());
 
@@ -59,9 +38,16 @@ pub async fn add_message(
             clipboard_data.data.remove(0);
         }
 
-        // 根据时间排序
+        // TODO: 根据时间排序
         clipboard_data.data.push(payload.message.clone());
 
+        // websocket
+        let ws_tx = clipboard_data.ws_tx.clone();
+        if let Err(err) = ws_tx.send(payload.message.clone()) {
+            tracing::error!("send websocket error: {}", err);
+        }
+
+        // TODO: 如果 websocket 发送了, 就不添加进入需要更新的设备列表
         let mut need_update_devices: Vec<Device> = Vec::new();
 
         for device in user.devices.into_iter() {
@@ -101,7 +87,7 @@ pub async fn message_update_base(
 
         let mut clipboard_datas = state.clipboard_datas.lock().await;
 
-        let mut clipboard_data = clipboard_datas
+        let clipboard_data = clipboard_datas
             .entry(user.id)
             .or_insert(ClipboardData::new());
 

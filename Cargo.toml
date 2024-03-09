@@ -20,6 +20,8 @@ uuid = {version = "1.7.0", features = [ "v7", "fast-rng", "macro-diagnostics"]}
 strum = "0.24"
 strum_macros = "0.24"
 num_enum = "0.5.1"
+futures = "0.3"
+futures-util = { version = "0.3", default-features = false, features = ["sink", "std"] }
 
 [dev-dependencies]
 tokio-test = "*"

@@ -35,7 +35,7 @@ impl DatabaseUser {
     }
 
     pub fn get_user(id: u64) -> BDEResult<Option<Self>> {
-        Ok(database_select_single("users", id)?)
+        database_select_single("users", id)
     }
 }
 

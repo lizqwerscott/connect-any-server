@@ -16,7 +16,7 @@ fn init_database() -> BDEResult<PathBuf> {
     let data_path = PathBuf::from("./data");
 
     if !data_path.exists() {
-        fs::create_dir(data_path.clone());
+        fs::create_dir(data_path.clone())?;
     }
 
     let database_path = data_path.join("data.db");

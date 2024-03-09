@@ -14,7 +14,7 @@ mod database;
     Deserialize, Serialize, EnumString, Display, ToSqlMacro, Clone, Copy, Debug, PartialEq, Eq,
 )]
 pub enum DeviceType {
-    IOS,
+    Ios,
     Android,
     Windows,
     Mac,
@@ -22,6 +22,21 @@ pub enum DeviceType {
 }
 
 pub type Device = database::DatabaseDevice;
+
+#[derive(Deserialize)]
+pub struct InputDevice {
+    name: String,
+    #[serde(rename = "type")]
+    device_type: String,
+}
+
+impl InputDevice {
+    pub fn parse(self) -> BDEResult<Device> {
+        let device_type = self.device_type.parse()?;
+
+        Device::get_device(self.name, device_type)
+    }
+}
 
 #[derive(Deserialize, Serialize)]
 pub struct User {
@@ -93,7 +108,7 @@ impl User {
         device_type: DeviceType,
         notification: String,
     ) -> BDEResult<()> {
-        if let None = database::DatabaseDevice::find_device(name.clone(), device_type)? {
+        if database::DatabaseDevice::find_device(name.clone(), device_type)?.is_none() {
             let device = database::DatabaseDevice::insert_device(name, device_type, notification)?;
 
             database::DatabaseUserDevice::insert_user_device(self.id, device.id)?;
