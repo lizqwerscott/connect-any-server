@@ -53,6 +53,7 @@ pub async fn add_message(
 
         for device in user.devices.into_iter() {
             if device != now_device {
+                need_update_devices.push(device.clone());
                 //iPhone use bark to send message
                 if device.device_type == DeviceType::Ios {
                     if let Err(err) = send_bark(device.notification, now_device.name.clone(), now_device.device_type, payload.message.data.clone()).await {
