@@ -48,7 +48,11 @@ impl fmt::Display for Clipboard {
         let duration = UNIX_EPOCH + std::time::Duration::from_millis(self.date as u64);
         let datetime = DateTime::<Local>::from(duration);
         let formatted_datetime = datetime.format("%Y-%m-%d %H:%M:%S").to_string();
-
-        write!(f, "Clipboard[{}]: {}", formatted_datetime, self.data)
+        let output = match self.clipboard_type {
+            ClipboardDataType::Text => self.data.clone(),
+            ClipboardDataType::Image => String::from("Image"),
+            ClipboardDataType::None => String::from("None"),
+        };
+        write!(f, "Clipboard[{}]: {}", formatted_datetime, output)
     }
 }
