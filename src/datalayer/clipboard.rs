@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub enum ClipboardDataType {
     Text,
+    Image,
     None,
 }
 
@@ -19,7 +20,7 @@ pub struct Clipboard {
 }
 
 impl Clipboard {
-    pub fn new(data: String) -> Self {
+    pub fn new(data: String, clipboard_type: ClipboardDataType) -> Self {
         let date = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
@@ -27,7 +28,7 @@ impl Clipboard {
 
         Clipboard {
             data,
-            clipboard_type: ClipboardDataType::Text,
+            clipboard_type,
             date,
         }
     }
